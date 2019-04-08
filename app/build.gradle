@@ -1,0 +1,56 @@
+
+apply plugin: 'com.android.application'
+apply plugin: 'org.greenrobot.greendao' // apply plugin
+android {
+    compileSdkVersion 27
+    defaultConfig {
+        applicationId "com.wudy.locationwudy"
+        minSdkVersion 19
+        targetSdkVersion 27
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    greendao {
+        schemaVersion 1
+        targetGenDir 'src/main/java'
+    }
+}
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation 'com.android.support:appcompat-v7:27.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.android.support:appcompat-v7:27.1.0'
+    implementation 'com.android.support:design:27.1.0'
+    implementation 'com.android.support.constraint:constraint-layout:1.1.3'
+    implementation 'com.jakewharton:butterknife:8.8.1'//注解包
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+    implementation 'com.wuhenzhizao:titlebar:1.1.3'//标题栏
+    implementation 'com.luffykou:android-common-utils:1.1.3'//常用工具包
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:2.9.44'//列表adapter
+    implementation 'org.greenrobot:greendao:3.2.2'//数据存储
+    implementation 'com.github.lygttpod:SuperTextView:2.1.8'//常用列元素
+    implementation 'com.android.support:recyclerview-v7:27.1.0'
+    implementation 'cn.bingoogolapple:bga-photopicker:1.2.8@aar'//图片选择器
+    implementation 'cn.bingoogolapple:bga-baseadapter:1.2.7@aar'
+    implementation 'pub.devrel:easypermissions:1.0.1'//权限验证
+    implementation 'com.blankj:utilcode:1.22.1'//最全的工具类
+    implementation 'com.alibaba:fastjson:1.2.54'//json解析
+    implementation 'gr.pantrif:easy-android-splash-screen:0.0.1'//欢迎界面
+    implementation 'com.github.bumptech.glide:glide:4.5.0'//图片播放器
+    implementation 'com.lucasurbas:listitemview:1.1.1'//listitem元素
+    implementation 'cn.imlibo:FilePicker:v0.0.5_alpha'//文件选择器
+    implementation 'com.stephentuso:welcome:1.4.1'//欢迎界面
+    implementation 'gdut.bsx:share2:0.9.3'//系统分享器
+    implementation('com.github.hss01248:DialogUtil:2.0.2') {//弹出窗口dialog
+        exclude group: 'com.android.support'
+    }
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'com.android.support.test:runner:1.0.2'
+    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+}

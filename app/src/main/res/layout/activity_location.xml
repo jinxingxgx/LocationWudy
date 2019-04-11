@@ -26,9 +26,28 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
         android:layout_below="@+id/button1"
         android:layout_marginRight="25dp"
         android:layout_marginTop="10dip"
-        android:text="显示轨迹" />
+        android:text="开启轨迹" />
+
+    <Button
+        android:id="@+id/button3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/button2"
+        android:layout_marginRight="25dp"
+        android:layout_marginTop="10dip"
+        android:text="查看轨迹" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/button3"
+        android:layout_marginRight="25dp"
+        android:layout_marginTop="10dip"
+        android:text="轨迹预警" />
 </RelativeLayout>

@@ -7,6 +7,7 @@ import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Property;
 
 import java.io.Serializable;
+
 import org.greenrobot.greendao.annotation.Generated;
 
 /**
@@ -17,6 +18,8 @@ public class MapLocationBean implements Serializable, Parcelable {
     private static final long serialVersionUID = -7916135203896142543L;
     @Property
     private int id;
+    @Property
+    public String indexId;
     @Property
     public double latitude;
     @Property
@@ -38,6 +41,7 @@ public class MapLocationBean implements Serializable, Parcelable {
 
     protected MapLocationBean(Parcel in) {
         id = in.readInt();
+        indexId = in.readString();
         latitude = in.readDouble();
         longitude = in.readDouble();
         speed = in.readFloat();
@@ -49,11 +53,12 @@ public class MapLocationBean implements Serializable, Parcelable {
         time = in.readString();
     }
 
-    @Generated(hash = 1862973611)
-    public MapLocationBean(int id, double latitude, double longitude, float speed,
-            float direction, float accuracy, int satellitesNum, String address, String city,
-            String time) {
+    @Generated(hash = 1688090212)
+    public MapLocationBean(int id, String indexId, double latitude, double longitude,
+            float speed, float direction, float accuracy, int satellitesNum, String address,
+            String city, String time) {
         this.id = id;
+        this.indexId = indexId;
         this.latitude = latitude;
         this.longitude = longitude;
         this.speed = speed;
@@ -69,6 +74,26 @@ public class MapLocationBean implements Serializable, Parcelable {
     public MapLocationBean() {
     }
 
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(id);
+        dest.writeString(indexId);
+        dest.writeDouble(latitude);
+        dest.writeDouble(longitude);
+        dest.writeFloat(speed);
+        dest.writeFloat(direction);
+        dest.writeFloat(accuracy);
+        dest.writeInt(satellitesNum);
+        dest.writeString(address);
+        dest.writeString(city);
+        dest.writeString(time);
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
     public static final Creator<MapLocationBean> CREATOR = new Creator<MapLocationBean>() {
         @Override
         public MapLocationBean createFromParcel(Parcel in) {
@@ -81,35 +106,24 @@ public class MapLocationBean implements Serializable, Parcelable {
         }
     };
 
-    @Override
-    public int describeContents() {
-        return 0;
-    }
-
-    @Override
-    public void writeToParcel(Parcel dest, int flags) {
-        dest.writeInt(id);
-        dest.writeDouble(latitude);
-        dest.writeDouble(longitude);
-        dest.writeFloat(speed);
-        dest.writeFloat(direction);
-        dest.writeFloat(accuracy);
-        dest.writeInt(satellitesNum);
-        dest.writeString(address);
-        dest.writeString(city);
-        dest.writeString(time);
-    }
-
     public int getId() {
-        return this.id;
+        return id;
     }
 
     public void setId(int id) {
         this.id = id;
     }
 
+    public String getIndexId() {
+        return indexId;
+    }
+
+    public void setIndexId(String indexId) {
+        this.indexId = indexId;
+    }
+
     public double getLatitude() {
-        return this.latitude;
+        return latitude;
     }
 
     public void setLatitude(double latitude) {
@@ -117,7 +131,7 @@ public class MapLocationBean implements Serializable, Parcelable {
     }
 
     public double getLongitude() {
-        return this.longitude;
+        return longitude;
     }
 
     public void setLongitude(double longitude) {
@@ -125,7 +139,7 @@ public class MapLocationBean implements Serializable, Parcelable {
     }
 
     public float getSpeed() {
-        return this.speed;
+        return speed;
     }
 
     public void setSpeed(float speed) {
@@ -133,7 +147,7 @@ public class MapLocationBean implements Serializable, Parcelable {
     }
 
     public float getDirection() {
-        return this.direction;
+        return direction;
     }
 
     public void setDirection(float direction) {
@@ -141,7 +155,7 @@ public class MapLocationBean implements Serializable, Parcelable {
     }
 
     public float getAccuracy() {
-        return this.accuracy;
+        return accuracy;
     }
 
     public void setAccuracy(float accuracy) {
@@ -149,7 +163,7 @@ public class MapLocationBean implements Serializable, Parcelable {
     }
 
     public int getSatellitesNum() {
-        return this.satellitesNum;
+        return satellitesNum;
     }
 
     public void setSatellitesNum(int satellitesNum) {
@@ -157,7 +171,7 @@ public class MapLocationBean implements Serializable, Parcelable {
     }
 
     public String getAddress() {
-        return this.address;
+        return address;
     }
 
     public void setAddress(String address) {
@@ -165,7 +179,7 @@ public class MapLocationBean implements Serializable, Parcelable {
     }
 
     public String getCity() {
-        return this.city;
+        return city;
     }
 
     public void setCity(String city) {
@@ -173,7 +187,7 @@ public class MapLocationBean implements Serializable, Parcelable {
     }
 
     public String getTime() {
-        return this.time;
+        return time;
     }
 
     public void setTime(String time) {

@@ -17,6 +17,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.alibaba.fastjson.JSON;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.location.LocationClient;
@@ -39,7 +40,11 @@ import com.baidu.mapapi.map.Polyline;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.utils.CoordinateConverter;
+import com.blankj.utilcode.util.NetworkUtils;
 import com.blankj.utilcode.util.StringUtils;
+import com.blankj.utilcode.util.ToastUtils;
+import com.lzy.okgo.OkGo;
+import com.lzy.okgo.callback.Callback;
 import com.wudy.locationwudy.bean.DaoMaster;
 import com.wudy.locationwudy.bean.DaoSession;
 import com.wudy.locationwudy.bean.MapLocationBean;
@@ -47,6 +52,8 @@ import com.wudy.locationwudy.bean.MapLocationBeanDao;
 
 import org.greenrobot.greendao.query.QueryBuilder;
 import org.greenrobot.greendao.query.WhereCondition;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,6 +61,7 @@ import java.util.Properties;
 import java.util.UUID;
 
 import cn.bingoogolapple.photopicker.activity.BGAPhotoPickerActivity;
+import okhttp3.Response;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
 
@@ -86,6 +94,9 @@ public class IndoorLocationActivity extends Activity {
     private InfoWindow mInfoWindow;
     private boolean isStart = false;
     private String indexid;
+    private Button lineButton;
+    private boolean isLine = false;
+    private Button ipButton;
 
     @Override
     @AfterPermissionGranted(1)
@@ -109,8 +120,10 @@ public class IndoorLocationActivity extends Activity {
         }
         requestLocButton = (Button) mainview.findViewById(R.id.button1);
         startButton = (Button) mainview.findViewById(R.id.button2);
-        mCurrentMode = LocationMode.NORMAL;
-        requestLocButton.setText("普通");
+        lineButton = (Button) mainview.findViewById(R.id.button3);
+        ipButton = (Button) mainview.findViewById(R.id.button4);
+        mCurrentMode = LocationMode.FOLLOWING;
+        requestLocButton.setText("跟随");
         OnClickListener btnClickListener = new OnClickListener() {
             public void onClick(View v) {
                 switch (mCurrentMode) {
@@ -174,101 +187,65 @@ public class IndoorLocationActivity extends Activity {
             @Override
             public void onClick(View v) {
                 isStart = !isStart;
+                if (isStart) {
+                    startButton.setText("停止记录");
+                } else {
+                    startButton.setText("开始记录");
+                }
                 indexid = UUID.randomUUID().toString();
             }
         });
-    }
+        lineButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(IndoorLocationActivity.this, LocationListActivity.class);
+                startActivity(intent);
 
-    List<LatLng> latLngs = new ArrayList<LatLng>();
-    BitmapDescriptor startBD = BitmapDescriptorFactory
-            .fromResource(R.drawable.ic_me_history_startpoint);
-    BitmapDescriptor finishBD = BitmapDescriptorFactory
-            .fromResource(R.drawable.ic_me_history_finishpoint);
-
-    /**
-     * 讲google地图的wgs84坐标转化为百度地图坐标
-     */
-    private void coordinateConvert() {
-        QueryBuilder<MapLocationBean> qb = MyApplication.getDaoInstant().getMapLocationBeanDao().queryBuilder();
-        qb.where(MapLocationBeanDao.Properties.Address.isNotNull(), new WhereCondition.StringCondition("GROUP BY indexId"));
-        qb.orderDesc(MapLocationBeanDao.Properties.Time);
-        List<MapLocationBean> mapLocations = qb.list();
-        if (mapLocations != null) {
-            for (int i = 0; i < mapLocations.size(); i++) {
-                LatLng sourceLatLng = new LatLng(mapLocations.get(i).getLatitude(), mapLocations.get(i).getLongitude());
-                latLngs.add(sourceLatLng);
-            }
-        }
-        MarkerOptions oStart = new MarkerOptions();//地图标记覆盖物参数配置类 
-        oStart.position(latLngs.get(0));//覆盖物位置点，第一个点为起点
-        oStart.icon(startBD);//设置覆盖物图片
-        oStart.zIndex(1);//设置覆盖物Index
-        mMarkerA = (Marker) (mBaiduMap.addOverlay(oStart)); //在地图上添加此图层
-
-        //添加终点图层
-        MarkerOptions oFinish = new MarkerOptions().position(latLngs.get(latLngs.size() - 1)).icon(finishBD).zIndex(2);
-        mMarkerB = (Marker) (mBaiduMap.addOverlay(oFinish));
-        OverlayOptions ooPolyline = new PolylineOptions().width(13).color(0xAAFF0000).points(latLngs);
-        mPolyline = (Polyline) mBaiduMap.addOverlay(ooPolyline);
-        mPolyline.setZIndex(3);
-
-        mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
-            public boolean onMarkerClick(final Marker marker) {
-
-                if (marker.getZIndex() == mMarkerA.getZIndex()) {//如果是起始点图层
-                    TextView textView = new TextView(getApplicationContext());
-                    textView.setText("起点");
-                    textView.setTextColor(Color.BLACK);
-                    textView.setGravity(Gravity.CENTER);
-
-                    //设置信息窗口点击回调
-                    InfoWindow.OnInfoWindowClickListener listener = new InfoWindow.OnInfoWindowClickListener() {
-                        public void onInfoWindowClick() {
-                            Toast.makeText(getApplicationContext(), "这里是起点", Toast.LENGTH_SHORT).show();
-                            mBaiduMap.hideInfoWindow();//隐藏信息窗口
-                        }
-                    };
-                    LatLng latLng = marker.getPosition();//信息窗口显示的位置点
-                    /**
-                     * 通过传入的 bitmap descriptor 构造一个 InfoWindow
-                     * bd - 展示的bitmap
-                     position - InfoWindow显示的位置点
-                     yOffset - 信息窗口会与图层图标重叠，设置Y轴偏移量可以解决
-                     listener - 点击监听者
-                     */
-                    mInfoWindow = new InfoWindow(BitmapDescriptorFactory.fromView(textView), latLng, -47, listener);
-                    mBaiduMap.showInfoWindow(mInfoWindow);//显示信息窗口
-
-                } else if (marker.getZIndex() == mMarkerB.getZIndex()) {//如果是终点图层
-                    Button button = new Button(getApplicationContext());
-                    button.setText("终点");
-                    button.setOnClickListener(new OnClickListener() {
-                        public void onClick(View v) {
-                            Toast.makeText(getApplicationContext(), "这里是终点", Toast.LENGTH_SHORT).show();
-                            mBaiduMap.hideInfoWindow();
-                        }
-                    });
-                    LatLng latLng = marker.getPosition();
-                    /**
-                     * 通过传入的 view 构造一个 InfoWindow, 此时只是利用该view生成一个Bitmap绘制在地图中，监听事件由自己实现。
-                     view - 展示的 view
-                     position - 显示的地理位置
-                     yOffset - Y轴偏移量
-                     */
-                    mInfoWindow = new InfoWindow(button, latLng, -47);
-                    mBaiduMap.showInfoWindow(mInfoWindow);
-                }
-                return true;
             }
         });
-
-        mBaiduMap.setOnPolylineClickListener(new BaiduMap.OnPolylineClickListener() {
+        ipButton.setOnClickListener(new OnClickListener() {
             @Override
-            public boolean onPolylineClick(Polyline polyline) {
-                if (polyline.getZIndex() == mPolyline.getZIndex()) {
-                    Toast.makeText(getApplicationContext(), "点数：" + polyline.getPoints().size() + ",width:" + polyline.getWidth(), Toast.LENGTH_SHORT).show();
-                }
-                return false;
+            public void onClick(View v) {
+                OkGo.<String>get("http://pv.sohu.com/cityjson?ie=utf-8")
+                        .execute(new JsonCallback<String>() {
+                            @Override
+                            public void onError(com.lzy.okgo.model.Response<String> response) {
+                                super.onError(response);
+                                ToastUtils.showShort(response.getException().getMessage());
+                            }
+
+                            @Override
+                            public void onSuccess(com.lzy.okgo.model.Response<String> response) {
+                                try {
+                                    int start = response.body().indexOf("{");
+                                    int end = response.body().indexOf("}");
+                                    String json = response.body().substring(start, end + 1);
+                                    final MobileIpBean mobileIpBean = JSON.parseObject(json, MobileIpBean.class);
+                                    if (mobileIpBean != null) {
+                                        OkGo.<IpBean>post("http://api.map.baidu.com/location/ip")
+                                                .params("ak", "F454f8a5efe5e577997931cc01de3974")
+                                                .params("ip", mobileIpBean.getCip())
+                                                .execute(new JsonCallback<IpBean>() {
+                                                    @Override
+                                                    public void onSuccess(com.lzy.okgo.model.Response<IpBean> response) {
+                                                        IpBean bean = response.body();
+                                                        if (bean != null) {
+                                                            ToastUtils.showShort("当前ip地址为(正常)：" + bean.getAddress() + "（" + mobileIpBean.getCip() + ")");
+                                                        } else {
+                                                            ToastUtils.showShort(response.message());
+
+                                                        }
+                                                    }
+                                                });
+                                    }
+                                } catch (Exception e) {
+
+                                }
+
+                            }
+                        });
+
+
             }
         });
     }
@@ -283,9 +260,10 @@ public class IndoorLocationActivity extends Activity {
         @Override
         public void onReceiveLocation(BDLocation location) {
             // map view 销毁后不在处理新接收的位置
-            if (location == null || mMapView == null || StringUtils.isEmpty(location.getAddrStr()) || !isStart) {
+            if (location == null || mMapView == null || StringUtils.isEmpty(location.getAddrStr())) {
                 return;
             }
+            //轨迹查询
 
             String bid = location.getBuildingID();
             if (bid != null && mMapBaseIndoorMapInfo != null) {
@@ -314,12 +292,20 @@ public class IndoorLocationActivity extends Activity {
 
                 }
             }
-
+            if (isFirstLoc) {
+                isFirstLoc = false;
+                LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
+                MapStatus.Builder builder = new MapStatus.Builder();
+                builder.target(ll).zoom(18.0f);
+                mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+            }
             MyLocationData locData = new MyLocationData.Builder().accuracy(location.getRadius())
                     // 此处设置开发者获取到的方向信息，顺时针0-360
                     .direction(100).latitude(location.getLatitude()).longitude(location.getLongitude()).build();
             mBaiduMap.setMyLocationData(locData);
-            location.getCity();
+            if (!isStart) {
+                return;
+            }
             try {
                 MapLocationBean bean = new MapLocationBean();
                 bean.setAccuracy(location.getRadius());
@@ -341,14 +327,6 @@ public class IndoorLocationActivity extends Activity {
             }
 
 
-            //轨迹查询
-            if (isFirstLoc) {
-                isFirstLoc = false;
-                LatLng ll = new LatLng(location.getLatitude(), location.getLongitude());
-                MapStatus.Builder builder = new MapStatus.Builder();
-                builder.target(ll).zoom(18.0f);
-                mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
-            }
         }
 
         public void onReceivePoi(BDLocation poiLocation) {

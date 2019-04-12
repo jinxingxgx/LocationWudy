@@ -39,7 +39,7 @@
         android:layout_below="@+id/button2"
         android:layout_marginRight="25dp"
         android:layout_marginTop="10dip"
-        android:text="查看轨迹" />
+        android:text="历史轨迹" />
 
     <Button
         android:id="@+id/button4"

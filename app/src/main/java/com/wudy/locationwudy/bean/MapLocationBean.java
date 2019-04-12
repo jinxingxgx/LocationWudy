@@ -3,6 +3,9 @@ package com.wudy.locationwudy.bean;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.chad.library.adapter.base.entity.MultiItemEntity;
+import com.wudy.locationwudy.LocationListAdapter;
+
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Property;
 
@@ -14,7 +17,7 @@ import org.greenrobot.greendao.annotation.Generated;
  * Created by xgx on 2019/4/10 for LocationWudy
  */
 @Entity
-public class MapLocationBean implements Serializable, Parcelable {
+public class MapLocationBean implements MultiItemEntity, Serializable, Parcelable {
     private static final long serialVersionUID = -7916135203896142543L;
     @Property
     private int id;
@@ -55,8 +58,8 @@ public class MapLocationBean implements Serializable, Parcelable {
 
     @Generated(hash = 1688090212)
     public MapLocationBean(int id, String indexId, double latitude, double longitude,
-            float speed, float direction, float accuracy, int satellitesNum, String address,
-            String city, String time) {
+                           float speed, float direction, float accuracy, int satellitesNum, String address,
+                           String city, String time) {
         this.id = id;
         this.indexId = indexId;
         this.latitude = latitude;
@@ -192,5 +195,10 @@ public class MapLocationBean implements Serializable, Parcelable {
 
     public void setTime(String time) {
         this.time = time;
+    }
+
+    @Override
+    public int getItemType() {
+        return LocationListAdapter.CONTENT;
     }
 }

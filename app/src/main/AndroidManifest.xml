@@ -33,6 +33,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".LocationListActivity" />
+        <activity android:name=".LocationLineActivity" />
 
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"

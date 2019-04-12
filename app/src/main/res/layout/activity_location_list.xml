@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <com.wuhenzhizao.titlebar.widget.CommonTitleBar
+        android:id="@+id/titlebar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:centerText="轨迹记录"
+        app:centerTextColor="@color/white"
+        app:centerType="textView"
+        app:fillStatusBar="true"
+        app:leftDrawable="@drawable/back_white"
+        app:leftDrawablePadding="0dp"
+        app:leftTextColor="@color/white"
+        app:leftType="textView"
+        app:statusBarColor="@color/colorPrimary"
+        app:statusBarMode="light"
+        app:titleBarColor="@color/colorPrimary" />
+
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/listView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

@@ -16,7 +16,7 @@ android {
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -46,7 +46,7 @@ dependencies {
     //列表adapter
     implementation 'org.greenrobot:greendao:3.2.2'
     //必须使用
-    compile 'com.lzy.net:okgo:3.0.4'
+    implementation 'com.lzy.net:okgo:3.0.4'
     //数据存储
     implementation 'com.github.lygttpod:SuperTextView:2.1.8'
 

@@ -37,6 +37,7 @@ import com.baidu.mapapi.map.Polyline;
 import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.model.LatLng;
 import com.blankj.utilcode.util.StringUtils;
+import com.blankj.utilcode.util.ToastUtils;
 import com.wudy.locationwudy.bean.MapLocationBean;
 import com.wudy.locationwudy.bean.MapLocationBeanDao;
 
@@ -113,6 +114,10 @@ public class LocationLineActivity extends Activity {
                 LatLng sourceLatLng = new LatLng(mapLocations.get(i).getLatitude(), mapLocations.get(i).getLongitude());
                 latLngs.add(sourceLatLng);
             }
+        }
+        if (latLngs.size() < 2) {
+            ToastUtils.showShort("记录的点位太少");
+            finish();
         }
         MarkerOptions oStart = new MarkerOptions();//地图标记覆盖物参数配置类 
         oStart.position(latLngs.get(0));//覆盖物位置点，第一个点为起点

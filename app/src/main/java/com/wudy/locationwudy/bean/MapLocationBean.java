@@ -4,7 +4,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.chad.library.adapter.base.entity.MultiItemEntity;
-import com.wudy.locationwudy.LocationListAdapter;
+import com.wudy.locationwudy.adapter.LocationListAdapter;
 
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Property;

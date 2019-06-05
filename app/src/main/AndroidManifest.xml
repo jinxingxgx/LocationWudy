@@ -28,14 +28,29 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:theme="@style/AppTheme">
         <activity android:name=".activity.IndoorLocationActivity">
+
+        </activity>
+        <activity android:name=".activity.LocationListActivity" />
+        <activity android:name=".activity.LocationLineActivity" />
+        <activity android:name=".activity.LoginActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.LocationListActivity" />
-        <activity android:name=".activity.LocationLineActivity" />
+        <activity android:name=".activity.RegisterActivity" />
 
+        <meta-data
+            android:name="Bmob_APP_KEY"
+            android:value="74eac9e7bdd72b0534912f25d01a139f" />
+        <!-- 设置更新渠道，如果没有，则不要添加此行 -->
+        <meta-data
+            android:name="BMOB_CHANNEL"
+            android:value="bmob" />
+        <!--数据共享-->
+        <provider
+            android:name="cn.bmob.v3.util.BmobContentProvider"
+            android:authorities="com.wudy.locationwudy.BmobContentProvider"></provider>
         <meta-data
             android:name="com.baidu.lbsapi.API_KEY"
             android:value="NxsLDAkaBzGFzwHQ3b3mah0p4AlOZGgN" />

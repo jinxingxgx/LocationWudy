@@ -1,3 +1,5 @@
+import com.android.build.gradle.api.BaseVariant
+
 apply plugin: 'com.android.application'
 apply plugin: 'org.greenrobot.greendao' // apply plugin
 android {
@@ -7,6 +9,8 @@ android {
         minSdkVersion 19
         targetSdkVersion 28
         versionCode 1
+        multiDexEnabled true // Enabling multidex support.
+
         versionName "1.0"
     }
     sourceSets {
@@ -20,14 +24,41 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    dexOptions {
+        javaMaxHeapSize "4g"
+    }
+
     greendao {
         schemaVersion 2
         targetGenDir 'src/main/java'
     }
 }
+afterEvaluate {
+    tasks.matching {
+        it.name.startsWith('dex')
+    }.each { dx ->
+        if (dx.additionalParameters == null) {
+            dx.additionalParameters = []
+        }
+        dx.additionalParameters += '--multi-dex' // enable multidex
+
+        // optional
+        // dx.additionalParameters += "--main-dex-list=$projectDir/<filename>".toString() // enable the main-dex-list
+    }
+    project.android.applicationVariants.all { BaseVariant variant ->
+        variant.assemble.doFirst {
+            if (variant.applicationId.endsWith(".debug")) {
+
+                project.walle.channelFile = new File("${project.getProjectDir()}/channel_debug")
+            }
+        }
+    }
+}
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     //noinspection GradleCompatible
+    implementation 'com.android.support:multidex:1.0.3'
+
     implementation 'com.android.support:appcompat-v7:28.0.0'
     //常用列元素
     implementation 'com.android.support:recyclerview-v7:28.0.0'
@@ -71,9 +102,16 @@ dependencies {
     //欢迎界面
     implementation 'gdut.bsx:share2:0.9.3'
     //系统分享器
-    implementation('com.github.hss01248:DialogUtil:2.0.2') {//弹出窗口dialog
-        exclude group: 'com.android.support'
-    }
+    implementation 'com.xw.repo:xedittext:2.0.5@aar'
+    //时间选择器
+    implementation 'com.contrarywind:Android-PickerView:4.1.8'
+    implementation 'cn.bmob.android:bmob-sdk:3.7.2'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.2'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
+    implementation 'com.squareup.okio:okio:2.1.0'
+    implementation 'com.squareup.okhttp3:okhttp:3.12.0'
+    implementation files('libs/gson-2.7.jar')
+    implementation files('libs/DialogUtil-2.0.2.aar')
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'

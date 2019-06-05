@@ -11,13 +11,21 @@
         android:clickable="true"
         android:screenOrientation="portrait" />
 
+    <Button
+        android:id="@+id/button0"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_marginRight="25dp"
+        android:layout_marginTop="10dip"
+        android:text="退出登录" />
 
     <Button
         android:id="@+id/button1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/button0"
         android:layout_marginRight="25dp"
         android:layout_marginTop="10dip" />
 
@@ -49,5 +57,6 @@
         android:layout_below="@+id/button3"
         android:layout_marginRight="25dp"
         android:layout_marginTop="10dip"
-        android:text="轨迹预警" />
+        android:text="点位预测" />
+
 </RelativeLayout>

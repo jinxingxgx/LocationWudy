@@ -5,35 +5,45 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
 import com.alibaba.fastjson.JSON;
 import com.baidu.location.BDAbstractLocationListener;
 import com.baidu.location.BDLocation;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.InfoWindow;
 import com.baidu.mapapi.map.MapBaseIndoorMapInfo;
 import com.baidu.mapapi.map.MapStatus;
 import com.baidu.mapapi.map.MapStatusUpdateFactory;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.map.Marker;
+import com.baidu.mapapi.map.MarkerOptions;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.MyLocationConfiguration.LocationMode;
 import com.baidu.mapapi.map.MyLocationData;
+import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.Polyline;
+import com.baidu.mapapi.map.PolylineOptions;
 import com.baidu.mapapi.model.LatLng;
+import com.blankj.utilcode.util.SPUtils;
 import com.blankj.utilcode.util.StringUtils;
 import com.blankj.utilcode.util.ToastUtils;
 import com.lzy.okgo.OkGo;
 import com.wudy.locationwudy.adapter.BaseStripAdapter;
 import com.wudy.locationwudy.bean.IpBean;
+import com.wudy.locationwudy.bean.MapLocationBeanDao;
 import com.wudy.locationwudy.utils.JsonCallback;
 import com.wudy.locationwudy.utils.LocationService;
 import com.wudy.locationwudy.bean.MobileIpBean;
@@ -42,6 +52,11 @@ import com.wudy.locationwudy.R;
 import com.wudy.locationwudy.utils.StripListView;
 import com.wudy.locationwudy.bean.MapLocationBean;
 
+import org.greenrobot.greendao.query.QueryBuilder;
+import org.greenrobot.greendao.query.WhereCondition;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import pub.devrel.easypermissions.AfterPermissionGranted;
@@ -71,7 +86,6 @@ public class IndoorLocationActivity extends Activity {
     private LocationService locationService;
     private Button startButton;
     private Marker mMarkerA;
-    private Marker mMarkerB;
     private Polyline mPolyline;
     private InfoWindow mInfoWindow;
     private boolean isStart = false;
@@ -79,6 +93,8 @@ public class IndoorLocationActivity extends Activity {
     private Button lineButton;
     private boolean isLine = false;
     private Button ipButton;
+    private Button reButton;
+    private Button logoutButton;
 
     @Override
     @AfterPermissionGranted(1)
@@ -101,6 +117,7 @@ public class IndoorLocationActivity extends Activity {
             EasyPermissions.requestPermissions(this, "需要访问定位权限", 1, perms);
         }
         requestLocButton = (Button) mainview.findViewById(R.id.button1);
+        logoutButton = (Button) mainview.findViewById(R.id.button0);
         startButton = (Button) mainview.findViewById(R.id.button2);
         lineButton = (Button) mainview.findViewById(R.id.button3);
         ipButton = (Button) mainview.findViewById(R.id.button4);
@@ -185,51 +202,155 @@ public class IndoorLocationActivity extends Activity {
 
             }
         });
+        OkGo.<String>get("http://pv.sohu.com/cityjson?ie=utf-8")
+                .execute(new JsonCallback<String>() {
+                    @Override
+                    public void onError(com.lzy.okgo.model.Response<String> response) {
+                        super.onError(response);
+                        ToastUtils.showShort(response.getException().getMessage());
+                    }
+
+                    @Override
+                    public void onSuccess(com.lzy.okgo.model.Response<String> response) {
+                        try {
+                            int start = response.body().indexOf("{");
+                            int end = response.body().indexOf("}");
+                            String json = response.body().substring(start, end + 1);
+                            final MobileIpBean mobileIpBean = JSON.parseObject(json, MobileIpBean.class);
+                            if (mobileIpBean != null) {
+                                OkGo.<IpBean>post("http://api.map.baidu.com/location/ip")
+                                        .params("ak", "F454f8a5efe5e577997931cc01de3974")
+                                        .params("ip", mobileIpBean.getCip())
+                                        .execute(new JsonCallback<IpBean>() {
+                                            @Override
+                                            public void onSuccess(com.lzy.okgo.model.Response<IpBean> response) {
+                                                IpBean bean = response.body();
+                                                if (bean != null) {
+                                                    ToastUtils.showShort("当前ip地址为(正常)：" + bean.getAddress() + "（" + mobileIpBean.getCip() + ")");
+                                                } else {
+                                                    ToastUtils.showShort(response.message());
+
+                                                }
+                                            }
+                                        });
+                            }
+                        } catch (Exception e) {
+
+                        }
+
+                    }
+                });
         ipButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                OkGo.<String>get("http://pv.sohu.com/cityjson?ie=utf-8")
-                        .execute(new JsonCallback<String>() {
-                            @Override
-                            public void onError(com.lzy.okgo.model.Response<String> response) {
-                                super.onError(response);
-                                ToastUtils.showShort(response.getException().getMessage());
-                            }
+                QueryBuilder<MapLocationBean> qb = MyApplication.getDaoInstant().getMapLocationBeanDao().queryBuilder();
+                qb.where(MapLocationBeanDao.Properties.Address.isNotNull(), new WhereCondition.StringCondition("1=1 GROUP BY " +
+                        MapLocationBeanDao.Properties.IndexId.columnName));
+                qb.orderDesc(MapLocationBeanDao.Properties.Time);
+                List<MapLocationBean> list = qb.list();
+                if (list != null && list.size() > 0) {
+                    for (int i = 0; i < list.size(); i++) {
+                        coordinateConvert(list.get(i).getIndexId());
 
-                            @Override
-                            public void onSuccess(com.lzy.okgo.model.Response<String> response) {
-                                try {
-                                    int start = response.body().indexOf("{");
-                                    int end = response.body().indexOf("}");
-                                    String json = response.body().substring(start, end + 1);
-                                    final MobileIpBean mobileIpBean = JSON.parseObject(json, MobileIpBean.class);
-                                    if (mobileIpBean != null) {
-                                        OkGo.<IpBean>post("http://api.map.baidu.com/location/ip")
-                                                .params("ak", "F454f8a5efe5e577997931cc01de3974")
-                                                .params("ip", mobileIpBean.getCip())
-                                                .execute(new JsonCallback<IpBean>() {
-                                                    @Override
-                                                    public void onSuccess(com.lzy.okgo.model.Response<IpBean> response) {
-                                                        IpBean bean = response.body();
-                                                        if (bean != null) {
-                                                            ToastUtils.showShort("当前ip地址为(正常)：" + bean.getAddress() + "（" + mobileIpBean.getCip() + ")");
-                                                        } else {
-                                                            ToastUtils.showShort(response.message());
-
-                                                        }
-                                                    }
-                                                });
-                                    }
-                                } catch (Exception e) {
-
-                                }
-
-                            }
-                        });
+                    }
+                } else {
+                    ToastUtils.showShort("请先记录轨迹，才能预测你以后会产生的点位");
+                }
 
 
             }
         });
+        logoutButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SPUtils.getInstance().remove("username");
+                SPUtils.getInstance().remove("isLogin");
+                startActivity(new Intent(IndoorLocationActivity.this,LoginActivity.class));
+                finish();
+
+            }
+        });
+    }
+
+    List<LatLng> latLngs = new ArrayList<LatLng>();
+    BitmapDescriptor finishBD = BitmapDescriptorFactory
+            .fromResource(R.drawable.ic_me_history_finishpoint);
+
+    /**
+     * 讲google地图的wgs84坐标转化为百度地图坐标
+     */
+    private void coordinateConvert(String indexId) {
+        try {
+            QueryBuilder<MapLocationBean> qb = MyApplication.getDaoInstant().getMapLocationBeanDao().queryBuilder();
+            if (StringUtils.isEmpty(indexId)) {
+                qb.where(MapLocationBeanDao.Properties.IndexId.isNull());
+            } else {
+                qb.where(MapLocationBeanDao.Properties.IndexId.eq(indexId));
+            }
+            qb.orderDesc(MapLocationBeanDao.Properties.Time);
+            List<MapLocationBean> mapLocations = qb.list();
+            if (mapLocations != null) {
+                for (int i = 0; i < mapLocations.size(); i++) {
+                    LatLng sourceLatLng = new LatLng(mapLocations.get(i).getLatitude(), mapLocations.get(i).getLongitude());
+                    latLngs.add(sourceLatLng);
+                }
+            }
+            MarkerOptions oStart = new MarkerOptions();//地图标记覆盖物参数配置类
+            oStart.position(latLngs.get(0));//覆盖物位置点，第一个点为起点
+            oStart.icon(finishBD);//设置覆盖物图片
+            oStart.zIndex(1);//设置覆盖物Index
+            mMarkerA = (Marker) (mBaiduMap.addOverlay(oStart)); //在地图上添加此图层
+            MapStatus.Builder builder = new MapStatus.Builder();
+            builder.target(latLngs.get(0)).zoom(18.0f);
+            mBaiduMap.animateMapStatus(MapStatusUpdateFactory.newMapStatus(builder.build()));
+
+
+            mBaiduMap.setOnMarkerClickListener(new BaiduMap.OnMarkerClickListener() {
+                public boolean onMarkerClick(final Marker marker) {
+
+                    if (marker.getZIndex() == mMarkerA.getZIndex()) {//如果是起始点图层
+                        TextView textView = new TextView(getApplicationContext());
+                        textView.setText("终点");
+                        textView.setTextColor(Color.BLACK);
+                        textView.setGravity(Gravity.CENTER);
+
+                        //设置信息窗口点击回调
+                        InfoWindow.OnInfoWindowClickListener listener = new InfoWindow.OnInfoWindowClickListener() {
+                            public void onInfoWindowClick() {
+                                Toast.makeText(getApplicationContext(), "这里是终点", Toast.LENGTH_SHORT).show();
+                                mBaiduMap.hideInfoWindow();//隐藏信息窗口
+                            }
+                        };
+                        LatLng latLng = marker.getPosition();//信息窗口显示的位置点
+                        /**
+                         * 通过传入的 bitmap descriptor 构造一个 InfoWindow
+                         * bd - 展示的bitmap
+                         position - InfoWindow显示的位置点
+                         yOffset - 信息窗口会与图层图标重叠，设置Y轴偏移量可以解决
+                         listener - 点击监听者
+                         */
+                        mInfoWindow = new InfoWindow(BitmapDescriptorFactory.fromView(textView), latLng, -47, listener);
+                        mBaiduMap.showInfoWindow(mInfoWindow);//显示信息窗口
+
+                    }
+                    return true;
+                }
+            });
+
+            mBaiduMap.setOnPolylineClickListener(new BaiduMap.OnPolylineClickListener() {
+                @Override
+                public boolean onPolylineClick(Polyline polyline) {
+                    if (polyline.getZIndex() == mPolyline.getZIndex()) {
+                        Toast.makeText(getApplicationContext(), "点数：" + polyline.getPoints().size() + ",width:" + polyline.getWidth(), Toast.LENGTH_SHORT).show();
+                    }
+                    return false;
+                }
+            });
+        } catch (Exception e) {
+
+        }
+
+
     }
 
     /**

@@ -2,8 +2,10 @@ package com.wudy.locationwudy.utils;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.multidex.MultiDex;
 
 import com.baidu.mapapi.CoordType;
 import com.baidu.mapapi.SDKInitializer;
@@ -31,6 +33,8 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.X509TrustManager;
 
+import cn.bmob.v3.Bmob;
+import cn.bmob.v3.BmobConfig;
 import okhttp3.OkHttpClient;
 
 /**
@@ -39,6 +43,13 @@ import okhttp3.OkHttpClient;
 public class MyApplication extends Application {
     private static MyApplication instance;
     private static DaoSession daoSession;
+    public static String APPID = "74eac9e7bdd72b0534912f25d01a139f";
+
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(base);
+        MultiDex.install(this);
+    }
 
     @Override
     public void onCreate() {
@@ -46,6 +57,35 @@ public class MyApplication extends Application {
         CrashHandler mCustomCrashHandler = CrashHandler.getInstance();
         mCustomCrashHandler.setCustomCrashHanler(getApplicationContext());
         Utils.init(this);
+        /**
+         * TODO 1.1、重置域名为VIP域名，此域名仅限企业版及以上套餐用户使用，此方法需要放置在初始化SDK操作之前。
+         * TODO 1.2、海外加速
+         */
+//        Bmob.resetDomain("http://open-vip.bmob.cn/8/");
+
+
+        /**
+         * TODO 2.1、SDK初始化方式一
+         */
+
+        Bmob.initialize(this, APPID);
+
+
+        /**
+         * TODO 2.2、SDK初始化方式二
+         * 设置BmobConfig，允许设置请求超时时间、文件分片上传时每片的大小、文件的过期时间
+         */
+        BmobConfig config = new BmobConfig.Builder(this)
+                //设置APPID
+                .setApplicationId(APPID)
+                //请求超时时间（单位为秒）：默认15s
+                .setConnectTimeout(30)
+                //文件分片上传时每片的大小（单位字节），默认512*1024
+                .setUploadBlockSize(1024 * 1024)
+                //文件的过期时间(单位为秒)：默认1800s
+                .setFileExpiration(5500)
+                .build();
+        Bmob.initialize(config);
 
         instance = this;//在Application的oncreate方法里:
         StyledDialog.init(this);

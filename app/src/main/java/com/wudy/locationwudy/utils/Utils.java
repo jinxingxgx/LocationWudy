@@ -1,4 +1,4 @@
-package com.wudy.locationwudy;
+package com.wudy.locationwudy.utils;
 
 import org.json.JSONException;
 import org.json.JSONObject;

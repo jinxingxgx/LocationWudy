@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:stv="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+
+    <LinearLayout
+        android:id="@+id/input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="80dp"
+        android:orientation="vertical"
+        android:paddingLeft="35dp"
+        android:paddingRight="35dp"
+        android:paddingTop="35dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="定位报警系统"
+            android:textColor="@color/colorPrimary"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <com.xw.repo.XEditText
+            android:id="@+id/et_userName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="25dp"
+            android:background="@null"
+            android:hint="用户名"
+            android:padding="5dp"
+            android:singleLine="true"
+            android:textColor="#000000"
+            android:textSize="@dimen/sp_14" />
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/dp_10"
+            android:background="@color/line" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:gravity="bottom"
+            android:orientation="horizontal">
+
+            <com.xw.repo.XEditText
+                android:id="@+id/et_password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@null"
+                android:hint="密码"
+                android:inputType="textPassword"
+                android:padding="5dp"
+                android:textColor="#000000"
+                android:textSize="@dimen/sp_14" />
+
+        </LinearLayout>
+
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/dp_10"
+            android:background="@color/line" />
+
+
+        <com.allen.library.SuperButton
+            android:id="@+id/sb_login"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginTop="20dp"
+            android:text="登录"
+            android:textColor="@color/white"
+            android:textSize="@dimen/sp_14"
+            stv:sCornersRadius="15dp"
+            stv:sGradientCenterColor="@color/sGradientCenterColor"
+            stv:sGradientEndColor="@color/sGradientEndColor"
+            stv:sGradientStartColor="@color/sGradientStartColor"
+            stv:sSelectorPressedColor="@color/sGradientEndColor"
+            stv:sUseSelector="true" />
+
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/l_f"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/iv_bg"
+        android:layout_marginTop="30dp"
+        android:gravity="center_horizontal"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tv_registration"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:padding="@dimen/dp_10"
+            android:text="立即注册"
+            android:textColor="@color/dialogutil_text_gray"
+            android:textSize="@dimen/sp_14"></TextView>
+
+    </LinearLayout>
+
+
+    <ImageView
+        android:id="@+id/iv_bg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="end"
+        android:background="@drawable/denglu_bg" />
+
+</RelativeLayout>
